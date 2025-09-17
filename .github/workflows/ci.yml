@@ -42,7 +42,13 @@ jobs:
 
       - name: Composer install
         working-directory: ./src
-        run: composer install --prefer-dist --no-interaction --no-progress
+        run: composer install --prefer-dist --no-interaction --no-progress --no-scripts
+
+      - name: Prepare storage and cache dirs
+        working-directory: ./src
+        run: |
+            mkdir -p storage/framework/{cache,sessions,views}
+            mkdir -p bootstrap/cache
 
       - name: Prepare .env and app key
         working-directory: ./src
@@ -50,6 +56,10 @@ jobs:
           cp .env.example .env
           php artisan key:generate
           php artisan config:cache
+
+      - name: Run package discovery
+        working-directory: ./src
+        run: php artisan package:discover --ansi
 
       - name: Run migrations
         working-directory: ./src
