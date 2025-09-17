@@ -1,0 +1,76 @@
+name: CI
+
+
+on:
+  pull_request:
+    branches:
+      [main]
+  push:
+    branches:
+      [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: notehub
+          POSTGRES_USER: notehub
+          POSTGRES_PASSWORD: notehub
+        ports:
+          ['5432:5432']
+        options: >-
+          --health-cmd="pg_isready -U notehub -d notehub"
+          --health-interval=10s --health-timeout=5s --health-retries=5
+      redis:
+        image: redis:7
+        ports: [ '6379:6379' ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, pdo_pgsql, redis
+          coverage: none
+
+      - name: Composer install
+        working-directory: ./src
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare .env and app key
+        working-directory: ./src
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan config:cache
+
+      - name: Run migrations
+        working-directory: ./src
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: notehub
+          DB_USERNAME: notehub
+          DB_PASSWORD: notehub
+          REDIS_HOST: 127.0.0.1
+          REDIS_PORT: 6379
+        run: php artisan migrate --force
+
+      - name: Run tests
+        working-directory: ./src
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: notehub
+          DB_USERNAME: notehub
+          DB_PASSWORD: notehub
+        run: php artisan test --without-tty
