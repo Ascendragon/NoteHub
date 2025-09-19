@@ -33,7 +33,7 @@ services:
       POSTGRES_USER: notehub
       POSTGRES_PASSWORD: notehub
     ports:
-    - "54320:5432"
+    - "5432:5432"
     volumes:
       - notehub-pgdata:/var/lib/postgresql/data
 
