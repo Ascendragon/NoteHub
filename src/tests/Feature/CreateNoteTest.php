@@ -2,14 +2,18 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class CreateNoteTest extends TestCase
 {
+    use RefreshDatabase;
 
-    public function creates_note_with_tags(): void
+    public function test_creates_note_with_tags(): void
     {
-        $payload = ['title' => 'Hello', 'content' => 'World', 'tags' => ['work', 'urgent']];
+        $user = User::factory()->create();
+        $payload = ['title' => 'Hello', 'content' => 'World', 'tags' => ['work', 'urgent'], 'user_id' => $user->id];
         $res = $this->postJson('/api/notes', $payload);
 
         $res->assertCreated()

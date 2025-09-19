@@ -4,6 +4,7 @@ namespace app\Domain\Tags\Models;
 
 use app\Domain\Notes\Models\Note;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Tag extends Model
 {
@@ -11,7 +12,7 @@ class Tag extends Model
         'name',
     ];
 
-    public function notes()
+    public function notes(): BelongsToMany
     {
         return $this->belongsToMany(Note::class, 'note_tag');
     }

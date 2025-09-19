@@ -22,7 +22,7 @@ final class NoteService
                 $tagIds = collect($dto->tags)->map(
                     fn($n) => Tag::firstOrCreate([
                         'name' => strtolower(trim($n))])->id)->all();
-                $note->tags->sync($tagIds);
+                $note->tags()->sync($tagIds);
             }
         return $note;
             });
